@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>每日推送 💌</title>
+  <title>Message du jour 💌</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
@@ -14,7 +14,6 @@
     .card { background: white; padding: 20px; border-radius: 0 0 12px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 16px; }
     label { font-size: 13px; color: #555; display: block; margin-bottom: 6px; }
     .weather-box { background: #f0f9f4; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
-    .weather-box .icon { font-size: 28px; }
     .weather-info p { font-size: 15px; font-weight: 500; }
     .weather-info small { font-size: 12px; color: #666; }
     .moods { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -29,8 +28,6 @@
     .send-btn { width: 100%; padding: 13px; background: #25d366; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
     .send-btn:hover { background: #1da851; }
     .send-btn:disabled { background: #aaa; cursor: not-allowed; }
-    #qr-section { text-align: center; padding: 20px; }
-    #qr-section img { max-width: 220px; }
     #status-msg { text-align: center; font-size: 13px; color: #888; }
   </style>
 </head>
@@ -39,193 +36,74 @@
   <div class="header">
     <div>💌</div>
     <div>
-      <h1>每日推送编辑器</h1>
-      <p id="conn-status">连接中...</p>
+      <h1>Message du jour</h1>
+      <p id="conn-status">Connexion en cours...</p>
     </div>
   </div>
-
   <div class="card">
-    <!-- 二维码 -->
-    <div id="qr-section" style="display:none">
-      <label>请用手机 WhatsApp 扫描二维码登录</label>
-      <img id="qr-img" src="" />
-    </div>
-
-    <!-- 联系人 -->
     <div>
-      <label>发送给</label>
+      <label>Envoyer à</label>
       <select id="contact-select">
-        <option value="">加载联系人中...</option>
+        <option value="">Chargement des contacts...</option>
       </select>
     </div>
-
-    <!-- 天气 -->
     <div>
-      <label>🌤️ 图卢兹今日天气</label>
+      <label>🌤️ Météo de Toulouse aujourd'hui</label>
       <div class="weather-box">
-        <div class="icon">⏳</div>
         <div class="weather-info">
-          <p id="weather-main">加载中...</p>
+          <p id="weather-main">Chargement...</p>
           <small id="weather-sub"></small>
         </div>
       </div>
     </div>
-
-    <!-- 心情 -->
     <div>
-      <label>😊 今日心情</label>
+      <label>😊 Humeur du jour</label>
       <div class="moods" id="moods">
-        <button class="mood-btn" data-value="😍 心情：甜蜜">😍 甜蜜</button>
-        <button class="mood-btn" data-value="😄 心情：开心">😄 开心</button>
-        <button class="mood-btn" data-value="😌 心情：平静">😌 平静</button>
-        <button class="mood-btn" data-value="🥱 心情：疲惫">🥱 疲惫</button>
-        <button class="mood-btn" data-value="😔 心情：思念">😔 思念</button>
+        <button class="mood-btn" data-value="😍 Humeur : Amoureux">😍 Amoureux</button>
+        <button class="mood-btn" data-value="😄 Humeur : Joyeux">😄 Joyeux</button>
+        <button class="mood-btn" data-value="😌 Humeur : Serein">😌 Serein</button>
+        <button class="mood-btn" data-value="🥱 Humeur : Fatigué">🥱 Fatigué</button>
+        <button class="mood-btn" data-value="😔 Humeur : Tu me manques">😔 Tu me manques</button>
       </div>
     </div>
-
-    <!-- 自定义文字 -->
     <div>
-      <label>💬 今日想说</label>
-      <textarea id="message" rows="3" placeholder="今天想对她/他说点什么..."></textarea>
+      <label>💬 Message du jour</label>
+      <textarea id="message" rows="3" placeholder="Ce que tu veux lui dire aujourd'hui..."></textarea>
+    </div>
+    
+    <div>
+      <label>❓ Question du jour (pour qu'il/elle réponde)</label>
+      <input type="text" id="question" placeholder="Tu as mangé quoi de bon aujourd'hui ?" />
     </div>
 
-    <!-- 提问 -->
     <div>
-      <label>❓ 今日提问（让对方回复）</label>
-      <input type="text" id="question" placeholder="今天吃了什么好吃的？" />
+    <label>🎵 Musique du jour (optionnel)</label>
+    <input type="text" id="music-url" placeholder="Colle un lien Spotify / YouTube..." />
+    <div id="music-preview" style="display:none; margin-top:10px; background:#f0f9f4; border-radius:10px; padding:12px; display:flex; align-items:center; gap:10px;">
+      <div style="font-size:28px;">🎵</div>
+      <div>
+        <p id="music-title" style="font-size:14px; font-weight:500;"></p>
+        <a id="music-link" href="" target="_blank" style="font-size:12px; color:#075e54;">Ouvrir le lien →</a>
+      </div>
     </div>
-
-    <!-- 图片上传 -->
+    </div>
     <div>
-      <label>🖼️ 表情包 / 图片（可选）</label>
+
+      <label>🖼️ Mème / Image (optionnel)</label>
       <div class="upload-area" id="upload-label">
-        点击选择图片
+        Cliquer pour choisir une image
         <input type="file" id="image-input" accept="image/*" />
       </div>
     </div>
-
-    <!-- 预览 -->
     <div>
-      <label>预览</label>
-      <div class="preview-box" id="preview">填写内容后自动预览...</div>
+      <label>Aperçu</label>
+      <div class="preview-box" id="preview">L'aperçu s'affiche automatiquement...</div>
     </div>
-
-    <button class="send-btn" id="send-btn" disabled>发送到 WhatsApp ✉️</button>
+    <button class="send-btn" id="send-btn" disabled>Envoyer sur WhatsApp ✉️</button>
     <p id="status-msg"></p>
   </div>
 </div>
 
-<script>
-let weatherStr = ''
-let selectedMood = ''
-
-// ── 初始化 ──────────────────────────────────────
-async function init() {
-  await checkQR()
-  await loadWeather()
-}
-
-async function checkQR() {
-  const r = await fetch('/qr').then(r => r.json())
-  if (r.ready) {
-    document.getElementById('conn-status').textContent = 'WhatsApp 已连接 ✓'
-    document.getElementById('qr-section').style.display = 'none'
-    loadContacts()
-    document.getElementById('send-btn').disabled = false
-  } else if (r.qr) {
-    document.getElementById('qr-section').style.display = 'block'
-    document.getElementById('qr-img').src = r.qr
-    document.getElementById('conn-status').textContent = '等待扫码...'
-    setTimeout(checkQR, 3000)
-  } else {
-    setTimeout(checkQR, 2000)
-  }
-}
-
-async function loadWeather() {
-  try {
-    const w = await fetch('/weather').then(r => r.json())
-    weatherStr = `${w.temp}°C · ${w.desc} · 最高 ${w.max}° / 最低 ${w.min}°`
-    document.getElementById('weather-main').textContent = `${w.temp}°C · ${w.desc}`
-    document.getElementById('weather-sub').textContent = `最高 ${w.max}° · 最低 ${w.min}°`
-    updatePreview()
-  } catch(e) {
-    document.getElementById('weather-main').textContent = '天气获取失败'
-  }
-}
-
-async function loadContacts() {
-  const contacts = await fetch('/contacts').then(r => r.json())
-  const sel = document.getElementById('contact-select')
-  sel.innerHTML = contacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
-}
-
-// ── 心情选择 ──────────────────────────────────────
-document.getElementById('moods').addEventListener('click', e => {
-  if (!e.target.classList.contains('mood-btn')) return
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'))
-  e.target.classList.add('active')
-  selectedMood = e.target.dataset.value
-  updatePreview()
-})
-
-// ── 文件选择 ──────────────────────────────────────
-document.getElementById('image-input').addEventListener('change', e => {
-  const name = e.target.files[0]?.name
-  document.getElementById('upload-label').childNodes[0].textContent = name || '点击选择图片'
-})
-
-// ── 自动预览 ──────────────────────────────────────
-['message','question'].forEach(id => {
-  document.getElementById(id).addEventListener('input', updatePreview)
-})
-
-function updatePreview() {
-  const date = new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' })
-  const msg = document.getElementById('message').value
-  const q = document.getElementById('question').value
-  let text = `📅 ${date}\n`
-  if (weatherStr) text += `🌤️ 图卢兹今天 ${weatherStr}\n`
-  if (selectedMood) text += `${selectedMood}\n`
-  if (msg) text += `\n💬 ${msg}\n`
-  if (q) text += `\n❓ ${q}`
-  document.getElementById('preview').textContent = text
-}
-
-// ── 发送 ──────────────────────────────────────────
-document.getElementById('send-btn').addEventListener('click', async () => {
-  const to = document.getElementById('contact-select').value
-  if (!to) return alert('请选择联系人')
-
-  const date = new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' })
-  const fd = new FormData()
-  fd.append('to', to)
-  fd.append('date', date)
-  fd.append('weather', weatherStr)
-  fd.append('mood', selectedMood)
-  fd.append('message', document.getElementById('message').value)
-  fd.append('question', document.getElementById('question').value)
-
-  const img = document.getElementById('image-input').files[0]
-  if (img) fd.append('image', img)
-
-  const btn = document.getElementById('send-btn')
-  btn.disabled = true
-  btn.textContent = '发送中...'
-
-  const r = await fetch('/send', { method: 'POST', body: fd }).then(r => r.json())
-
-  if (r.success) {
-    document.getElementById('status-msg').textContent = '✅ 发送成功！'
-    btn.textContent = '已发送 ✓'
-  } else {
-    document.getElementById('status-msg').textContent = '❌ ' + r.error
-    btn.disabled = false
-    btn.textContent = '发送到 WhatsApp ✉️'
-  }
-})
-
-init()
-</script>
+<script src="app.js"></script>
 </body>
 </html>
