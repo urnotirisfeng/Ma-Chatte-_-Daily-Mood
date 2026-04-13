@@ -3,4 +3,7 @@
 
 http://localhost:3000/qr 用于连接WhatsApp
 
-node server.js
+node server.js 用于lance主程序
+
+
+
