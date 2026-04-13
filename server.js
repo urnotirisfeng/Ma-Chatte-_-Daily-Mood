@@ -22,17 +22,17 @@ let isReady = false
 
 client.on('qr', async (qr) => {
   qrImageData = await qrcode.toDataURL(qr)
-  console.log('二维码已生成，请打开 http://localhost:3000/scan 扫码')
+  console.log('QR code généré — ouvrir http://localhost:3000/scan pour scanner')
 })
 
 client.on('ready', () => {
   isReady = true
-  console.log('✅ WhatsApp 已连接！')
+  console.log('✅ WhatsApp connecté !')
 })
 
 client.initialize()
 
-// ── 天气（图卢兹）────────────────────────────────
+// ── Météo (Toulouse) ─────────────────────────────
 async function getWeather() {
   const { data } = await axios.get('https://api.open-meteo.com/v1/forecast', {
     params: {
@@ -61,9 +61,8 @@ function weatherDesc(code) {
   return 'Météo inconnue'
 }
 
-// ── 路由 ─────────────────────────────────────────
+// ── Routes ───────────────────────────────────────
 
-// 前端轮询用，返回 JSON
 app.get('/qr', (req, res) => {
   if (isReady) {
     res.json({ ready: true })
@@ -72,36 +71,33 @@ app.get('/qr', (req, res) => {
   }
 })
 
-// 扫码页面（人工打开）
 app.get('/scan', (req, res) => {
   if (isReady) {
-    return res.send('<h2 style="font-family:sans-serif;padding:20px;color:green">✅ 已连接！<a href="/">返回主页</a></h2>')
+    return res.send('<h2 style="font-family:sans-serif;padding:20px;color:green">✅ Connecté ! <a href="/">Retour à l\'accueil</a></h2>')
   }
   if (!qrImageData) {
-    return res.send('<h2 style="font-family:sans-serif;padding:20px;">⏳ 二维码生成中，请稍后刷新...</h2>')
+    return res.send('<h2 style="font-family:sans-serif;padding:20px;">⏳ QR code en cours de génération, veuillez rafraîchir...</h2>')
   }
   res.send(`
     <html><body style="display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f2f5;flex-direction:column;font-family:sans-serif;">
-      <h2 style="margin-bottom:20px;">用手机 WhatsApp 扫描二维码</h2>
+      <h2 style="margin-bottom:20px;">Scanner le QR code avec WhatsApp</h2>
       <img src="${qrImageData}" style="width:280px;height:280px;border:4px solid #075e54;border-radius:12px;" />
-      <p style="margin-top:16px;color:#666;">扫码后请刷新主页面</p>
+      <p style="margin-top:16px;color:#666;">Après le scan, rafraîchir la page principale</p>
       <script>setTimeout(()=>location.reload(), 4000)</script>
     </body></html>
   `)
 })
 
-// 天气
 app.get('/weather', async (req, res) => {
   try {
     res.json(await getWeather())
   } catch(e) {
-    res.status(500).json({ error: '天气获取失败' })
+    res.status(500).json({ error: 'Météo indisponible' })
   }
 })
 
-// 联系人
 app.get('/contacts', async (req, res) => {
-  if (!isReady) return res.status(400).json({ error: '未连接' })
+  if (!isReady) return res.status(400).json({ error: 'Non connecté' })
   const contacts = await client.getContacts()
   const filtered = contacts
     .filter(c => c.name && c.isMyContact)
@@ -109,16 +105,15 @@ app.get('/contacts', async (req, res) => {
   res.json(filtered)
 })
 
-// 发送
 app.post('/send', upload.single('image'), async (req, res) => {
-  if (!isReady) return res.status(400).json({ error: 'WhatsApp 未连接' })
-  const { to, date, weather, mood, message, question } = req.body
+  if (!isReady) return res.status(400).json({ error: 'WhatsApp non connecté' })
+  const { to, date, weather, mood, message, question, music } = req.body
   let text = `📅 *${date}*\n`
-  text += `🌤️ Le météo de Toulouse ${weather}\n`
+  text += `🌤️ Météo à Toulouse : ${weather}\n`
   if (mood)     text += `${mood}\n`
   if (message)  text += `\n💬 ${message}\n`
-  if (question) text += `\n❓ ${question}`
-  if (req.body.music) text += `\n🎵 Musique du jour : ${req.body.music}`
+  if (question) text += `\n❓ ${question}\n`
+  if (music)    text += `\n🎵 Musique du jour : ${music}`
   try {
     await client.sendMessage(to, text)
     if (req.file) {
@@ -132,4 +127,4 @@ app.post('/send', upload.single('image'), async (req, res) => {
   }
 })
 
-app.listen(3000, () => console.log('🚀 打开浏览器访问 http://localhost:3000'))
+app.listen(3000, () => console.log('🚀 Serveur lancé — http://localhost:3000'))
